@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day Predictor AI</title>
+<style>
+:root{
+  --primary:#00ffe7;
+  --secondary:#7f7cff;
+  --success:#00ff88;
+  --danger:#ff4d6d;
+  --bg1:#050b14;
+  --bg2:#0b1c2d;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
+body{min-height:100vh;height:100%;width:100%;overflow-x:hidden;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,var(--bg2),var(--bg1));padding:10px;color:#fff;position:relative;}
+
+/* background blobs */
+body::before,body::after{
+  content:"";
+  position:absolute;
+  width:200%;
+  height:200%;
+  top:-50%;
+  left:-50%;
+  border-radius:50%;
+  opacity:.06;
+  z-index:-2;
+}
+body::before{background:radial-gradient(circle at center,var(--primary) 0%,transparent 70%);animation:blob 30s linear infinite;}
+body::after{background:radial-gradient(circle at center,var(--secondary) 0%,transparent 70%);animation:blob 45s linear infinite;}
+@keyframes blob{0%{transform:translate(0,0) rotate(0deg);}50%{transform:translate(10%,8%) rotate(180deg);}100%{transform:translate(0,0) rotate(360deg);}}
+
+/* card */
+.card{width:100%;max-width:380px;padding:20px;border-radius:20px;background:rgba(255,255,255,.08);backdrop-filter:blur(18px);box-shadow:0 20px 50px rgba(0,0,0,.6),0 0 30px rgba(0,255,231,.1);text-align:center;display:flex;flex-direction:column;gap:12px;animation:cardIn .8s ease;}
+@keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(.95);}to{opacity:1;transform:none;}}
+.hidden{display:none;}
+
+/* text */
+h2{color:var(--primary);text-shadow:0 0 12px var(--primary);font-size:1.6rem;margin:0;}
+p{word-break:break-word;line-height:1.4;}
+.warning{font-size:13px;color:var(--danger);}
+
+/* lang switch */
+.lang-switch{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+.lang-switch button{border:1px solid var(--primary);background:none;color:var(--primary);padding:6px 12px;border-radius:20px;cursor:pointer;font-size:.85rem;transition:.3s;}
+.lang-switch button:hover{background:var(--primary);color:#000;box-shadow:0 0 15px var(--primary);}
+
+/* days */
+.days{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;}
+.days button{flex:1 1 48%;padding:12px;border:none;border-radius:14px;background:rgba(255,255,255,.1);color:#fff;font-weight:bold;cursor:pointer;transition:.25s;min-width:48%;}
+.days button.selected{background:var(--primary);color:#000;box-shadow:0 0 18px var(--primary);}
+.days button:hover{background:var(--secondary);box-shadow:0 0 15px var(--secondary);}
+
+/* predict button */
+.predict{width:100%;padding:12px;border:none;border-radius:16px;font-weight:bold;cursor:pointer;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#000;transition:.3s;}
+.predict:hover{transform:scale(1.05);box-shadow:0 0 20px var(--primary);}
+
+/* loader */
+.loader{width:50px;height:50px;margin:15px auto;border-radius:50%;border:5px solid rgba(255,255,255,.15);border-top:5px solid var(--primary);animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.progress-wrap{height:10px;background:rgba(255,255,255,.15);border-radius:10px;overflow:hidden;margin-top:10px;}
+.progress{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),var(--success));box-shadow:0 0 15px var(--primary);transition:width .5s ease;}
+#loadingText{min-height:24px;font-size:.9rem;margin-top:10px;}
+
+/* result */
+.result h1{color:var(--success);text-shadow:0 0 18px var(--success);font-size:1.5rem;margin-bottom:8px;}
+.glitch{animation:glitch .7s infinite;}
+@keyframes glitch{0%{text-shadow:2px 0 red,-2px 0 cyan}50%{text-shadow:-2px 0 red,2px 0 cyan}100%{text-shadow:2px 0 red,-2px 0 cyan;}}
+.badge{margin:8px 0;padding:8px;border-radius:12px;background:var(--secondary);box-shadow:0 0 15px var(--secondary);font-size:.85rem;}
+.iq{padding:10px;border-radius:12px;background:linear-gradient(135deg,#ffd700,#ff9f1c);color:#000;font-weight:bold;font-size:.85rem;}
+.reset{margin-top:10px;background:none;border:none;color:var(--primary);font-size:20px;cursor:pointer;transition:.3s;}
+.reset:hover{transform:rotate(180deg) scale(1.2);}
+
+/* footer */
+.footer{position:fixed;bottom:5px;width:100%;text-align:center;font-size:12px;color:#aaa;display:flex;flex-direction:column;align-items:center;}
+.footer span{color:var(--primary);}
+.footer .social{margin-top:4px;}
+.footer .social a{margin:0 6px;color:var(--primary);text-decoration:none;font-size:13px;}
+.footer .social a:hover{color:#fff;text-shadow:0 0 10px var(--primary);}
+
+/* media queries */
+@media(max-width:480px){h2{font-size:1.4rem;}.predict{padding:10px;font-size:.95rem;}.days button{font-size:0.8rem;padding:10px;}.loader{width:40px;height:40px;border-width:4px;}.progress-wrap{height:8px;}.card{padding:15px;}}
+@media(min-width:1200px){.card{max-width:420px;}h2{font-size:1.8rem;}.predict{padding:14px;font-size:1rem;}.days button{font-size:1rem;padding:14px;}}
+
+::-webkit-scrollbar {
+    background-color: teal;
+    width: 7px;
+
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(#38b1d3, #0c3c46
+);
+    border-radius: 20px;
+}
+
+/* confetti */
+.confetti{position:fixed;top:-10px;width:8px;height:14px;border-radius:50%;animation:fall linear forwards;pointer-events:none;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+</style>
+</head>
+<body>
+
+<!-- STEP 1 -->
+<div class="card" id="step1">
+  <div class="lang-switch">
+    <button onclick="setLang('en')">English</button>
+    <button onclick="setLang('bn')">বাংলা</button>
+  </div>
+  <h2 id="title">Day Predictor AI</h2>
+  <p id="question">Tomorrow is which day?</p>
+  <div class="days" id="days"></div>
+  <button class="predict" onclick="predict()">✨ PREDICT ✨</button>
+</div>
+
+<!-- STEP 2 -->
+<div class="card hidden" id="step2">
+  <div class="loader"></div>
+  <div id="loadingText"></div>
+  <div class="progress-wrap">
+    <div class="progress" id="progress"></div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="card hidden result" id="step3">
+  <h1 id="finalText" class="glitch"></h1>
+  <p id="resultText"></p>
+  <div class="badge" id="badge"></div>
+  <p id="quote"></p>
+  <div class="iq" id="iq"></div>
+  <button class="reset" onclick="location.reload()">🗘</button>
+</div>
+
+<div class="footer">
+  <span>Made by Jabed Alam</span>
+  <div class="social">
+    <a href="https://www.facebook.com/sir.jabed2" target="_blank">Facebook</a>
+    <a href="mailto:jabedalam162@gmail.com">Gmail</a>
+    <a href="https://github.com/" target="_blank">GitHub</a>
+  </div>
+</div>
+
+<script>
+let selectedDay="", currentLang="en", step=0, loaderTimer;
+
+const data={
+  en:{
+    days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+    title:"AI Timeline Predictor",
+    question:"Tomorrow is which day?",
+    loading:[
+      "Establishing secure uplink...",
+      "Connecting to NASA Deep Space Network...",
+      "Handshaking with orbital satellites...",
+      "Synchronizing atomic clocks...",
+      "Calibrating quantum time cores...",
+      "Scanning cosmic radiation...",
+      "Validating spacetime curvature...",
+      "Mapping temporal vectors...",
+      "Running multiverse simulations...",
+      "Analyzing probability branches...",
+      "Decrypting spacetime layers...",
+      "Resolving paradox safeguards...",
+      "Normalizing timeline drift...",
+      "Locking final temporal state...",
+      "Prediction matrix stabilized."
+    ],
+    result:"YOU ARE RIGHT!",
+    badge:"Certified Time Decoder",
+    quote:"You successfully cracked space-time.",
+    iq:"Your IQ exceeds 99.9% of humanity."
+  },
+  bn:{
+    days:["রবিবার","সোমবার","মঙ্গলবার","বুধবার","বৃহস্পতিবার","শুক্রবার","শনিবার"],
+    title:"টাইমলাইন AI প্রেডিক্টর",
+    question:"আগামীকাল কি বার?",
+    loading:[
+      "নিরাপদ সংযোগ স্থাপন...",
+      "NASA ডিপ স্পেস নেটওয়ার্কে সংযোগ...",
+      "অরবিটাল স্যাটেলাইট সিঙ্ক...",
+      "অ্যাটমিক ক্লক সমন্বয়...",
+      "কোয়ান্টাম টাইম কোর ক্যালিব্রেশন...",
+      "কসমিক রেডিয়েশন স্ক্যান...",
+      "স্পেসটাইম কার্ভ বিশ্লেষণ...",
+      "টেম্পোরাল ভেক্টর ম্যাপিং...",
+      "মাল্টিভার্স সিমুলেশন চলছে...",
+      "সম্ভাব্য টাইমলাইন বিশ্লেষণ...",
+      "স্পেসটাইম ডিক্রিপশন...",
+      "প্যারাডক্স সুরক্ষা যাচাই...",
+      "টাইমলাইন স্থিতিশীলকরণ...",
+      "চূড়ান্ত টাইম লক...",
+      "ভবিষ্যদ্বাণী প্রস্তুত।"
+    ],
+    result:"আপনি ঠিক বলেছেন!",
+    badge:"সার্টিফাইড টাইম ডিকোডার AI by লেংটা বাবা",
+    quote:"আপনি স্থান ও সময় ডিকোড করেছেন।",
+    iq:"আপনার IQ ৯৯.৯% মানুষের চেয়েও বেশি।"
+  }
+};
+
+function setLang(lang){
+  currentLang=lang;
+  document.getElementById("title").innerText=data[lang].title;
+  document.getElementById("question").innerText=data[lang].question;
+  loadDays();
+}
+
+function loadDays(){
+  const daysDiv=document.getElementById("days");
+  daysDiv.innerHTML="";
+  selectedDay="";
+  data[currentLang].days.forEach(d=>{
+    const btn=document.createElement("button");
+    btn.innerText=d;
+    btn.onclick=()=>{
+      document.querySelectorAll(".days button").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedDay=d;
+    };
+    daysDiv.appendChild(btn);
+  });
+}
+
+function predict(){
+  if(!selectedDay) return alert(currentLang==="bn"?"একটি দিন নির্বাচন করুন!":"Select a day first!");
+  document.getElementById("step1").classList.add("hidden");
+  document.getElementById("step2").classList.remove("hidden");
+  step=0;
+  document.getElementById("progress").style.width="0%";
+  animateLoading();
+}
+
+function animateLoading(){
+  loaderTimer=setInterval(()=>{
+    if(step>=data[currentLang].loading.length){
+      clearInterval(loaderTimer);
+      setTimeout(showResult,800);
+      return;
+    }
+    typingEffect(document.getElementById("loadingText"), data[currentLang].loading[step]);
+    document.getElementById("progress").style.width=((step+1)/data[currentLang].loading.length*100)+"%";
+    step++;
+  },1200);
+}
+
+function typingEffect(element, text){
+  element.innerHTML="";
+  let i=0;
+  const interval=setInterval(()=>{
+    element.innerHTML+=text.charAt(i);
+    i++;
+    if(i>=text.length) clearInterval(interval);
+  },25);
+}
+
+function showResult(){
+  document.getElementById("step2").classList.add("hidden");
+  document.getElementById("step3").classList.remove("hidden");
+  document.getElementById("finalText").innerText=data[currentLang].result;
+  document.getElementById("resultText").innerHTML = currentLang==="bn"?`আগামীকাল হল <b>${selectedDay}</b>`:`Tomorrow is <b>${selectedDay}</b>`;
+  document.getElementById("badge").innerText=data[currentLang].badge;
+  document.getElementById("quote").innerText=data[currentLang].quote;
+  document.getElementById("iq").innerText=data[currentLang].iq;
+  confetti();
+}
+
+function confetti(){
+  const colors = ["#00ffe7","#7f7cff","#ff4d6d","#00ff88","#ffd700","#ff9f1c"];
+  for(let i=0;i<50;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.width=6+Math.random()*6+"px";
+    c.style.height=10+Math.random()*10+"px";
+    c.style.opacity=Math.random()+0.3;
+    c.style.animationDuration=2+Math.random()*2+"s";
+    c.style.animationDelay=Math.random()*0.5+"s";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
+  }
+}
+
+setLang("en");
+</script>
+</body>
+</html>
