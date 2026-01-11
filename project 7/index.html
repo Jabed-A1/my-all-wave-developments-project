@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch the Button</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+
+  body {
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    overflow: hidden;
+  }
+
+  .container {
+    text-align: center;
+    color: #fff;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+  }
+
+  p {
+    opacity: 0.8;
+    margin-bottom: 20px;
+  }
+
+  button {
+    position: absolute;
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    background: #ff4d4d;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  .message {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0.9;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Catch the Button</h1>
+  <p>Try to click it 😏</p>
+</div>
+
+<button id="runBtn">Click Me</button>
+
+<div class="message" id="msg">Nice try.</div>
+
+<script>
+  const btn = document.getElementById("runBtn");
+  const msg = document.getElementById("msg");
+
+  const messages = [
+    "Too slow 😏",
+    "Almost!",
+    "Nope.",
+    "Try harder.",
+    "You wish.",
+    "Not today."
+  ];
+
+  function moveButton() {
+    const padding = 20;
+    const maxX = window.innerWidth - btn.offsetWidth - padding;
+    const maxY = window.innerHeight - btn.offsetHeight - padding;
+
+    const randomX = Math.random() * maxX;
+    const randomY = Math.random() * maxY;
+
+    btn.style.left = randomX + "px";
+    btn.style.top = randomY + "px";
+
+    msg.textContent = messages[Math.floor(Math.random() * messages.length)];
+  }
+
+  // Desktop: move on hover
+  btn.addEventListener("mouseenter", moveButton);
+
+  // Mobile: move on touch
+  btn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    moveButton();
+  });
+
+  // Initial position
+  moveButton();
+</script>
+
+</body>
+</html>

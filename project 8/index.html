@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Human Verification</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #141e30, #243b55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+  }
+
+  .captcha-box {
+    background: #1e293b;
+    width: 90%;
+    max-width: 420px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 10px;
+  }
+
+  .instruction {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 20px;
+  }
+
+  .task {
+    background: #0f172a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 15px;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    background: #22c55e;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #16a34a;
+  }
+
+  .status {
+    margin-top: 15px;
+    font-size: 14px;
+    min-height: 20px;
+    opacity: 0.9;
+  }
+
+  .progress {
+    height: 8px;
+    background: #334155;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 15px;
+  }
+
+  .bar {
+    height: 100%;
+    width: 0%;
+    background: #38bdf8;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="captcha-box">
+  <h2>Verify You Are Human</h2>
+  <div class="instruction">This will only take a moment.</div>
+
+  <div class="task" id="task">
+    Type the word <b>human</b>
+  </div>
+
+  <input type="text" id="answer" placeholder="Enter answer">
+
+  <button id="verifyBtn">Verify</button>
+
+  <div class="progress">
+    <div class="bar" id="bar"></div>
+  </div>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+  const tasks = [
+    "Type the word 'human'",
+    "Type the word 'robot' but mean it",
+    "Enter the opposite of what you think",
+    "Type 'human' without copying",
+    "Prove you're not a toaster",
+    "Type the word 'human' confidently",
+    "Re-enter previous answer, but better"
+  ];
+
+  const responses = [
+    "Verification failed. Please try again.",
+    "Almost. But no.",
+    "Human behavior detected. Suspicious.",
+    "Answer too human.",
+    "Answer not human enough.",
+    "Unexpected confidence level.",
+    "Verification expired. Restarting..."
+  ];
+
+  let progress = 0;
+
+  const taskEl = document.getElementById("task");
+  const input = document.getElementById("answer");
+  const bar = document.getElementById("bar");
+  const status = document.getElementById("status");
+  const btn = document.getElementById("verifyBtn");
+
+  btn.addEventListener("click", () => {
+    progress += Math.floor(Math.random() * 20) + 5;
+
+    if (progress >= 90) {
+      progress = 10;
+      status.textContent = "Almost verified… restarting for security reasons.";
+    } else {
+      status.textContent = responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    bar.style.width = progress + "%";
+    taskEl.innerHTML = tasks[Math.floor(Math.random() * tasks.length)];
+    input.value = "";
+  });
+</script>
+
+</body>
+</html>

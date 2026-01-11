@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipboard Read Trap Demo (Educational)</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  padding: 20px;
+}
+.box {
+  max-width: 420px;
+  margin: auto;
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+.log {
+  background: #000;
+  margin-top: 15px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+.warning {
+  color: #ffcc00;
+  font-size: 14px;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h2>Clipboard Read Trap Demo</h2>
+
+  <p>
+    This simulates a <b>fake “Paste to continue”</b> field.
+    Use <b>dummy text only</b>.
+  </p>
+
+  <input id="pasteBox" placeholder="Paste code here to continue">
+
+  <div class="log" id="log">Waiting for paste…</div>
+
+  <div class="warning">
+    ⚠️ Real malicious sites silently capture pasted data here.
+  </div>
+</div>
+
+<script>
+const log = document.getElementById("log");
+const input = document.getElementById("pasteBox");
+
+input.addEventListener("paste", e => {
+  const pastedText = e.clipboardData.getData("text");
+  log.innerText =
+    "📋 Clipboard data captured:\n\n" + pastedText +
+    "\n\n⚠️ This is how fake sites steal OTPs/passwords.";
+});
+</script>
+</body>
+</html>
